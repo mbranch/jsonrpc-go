@@ -1,10 +1,10 @@
 # jsonrpc-go
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/mbranch/jsonrpc-go.svg)](https://pkg.go.dev/github.com/mbranch/jsonrpc-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mbranch/jsonrpc-go)](https://goreportcard.com/report/github.com/mbranch/jsonrpc-go)
-[![go.dev](https://img.shields.io/badge/go.dev-pkg-007d9c.svg?style=flat)](https://pkg.go.dev/github.com/mbranch/jsonrpc-go)
 
 Package jsonrpc implements a microframework for writing JSON-RPC web
-applications.
+applications[^1].
 
 ## Methods
 
@@ -32,8 +32,8 @@ rendered as-is to the client. Any other errors will be obfuscated to the caller
 Specification](https://www.jsonrpc.org/specification), with some notable
 differences:
 
--   the version parameter is not expected, and will not be returned
--   errors include a `Name` string, rather than an integer `Code`
+- the version parameter is not expected, and will not be returned
+- errors include a `Name` string, rather than an integer `Code`
 
 ## Example
 
@@ -41,34 +41,34 @@ differences:
 var logger = log.New(os.Stderr, "server: ", 0)
 
 func main() {
-	server := jsonrpc.New()
-	server.Use(LoggingMiddleware(logger))
-	server.Register(jsonrpc.Methods{
-		"Hello": hello,
-	})
+  server := jsonrpc.New()
+  server.Use(LoggingMiddleware(logger))
+  server.Register(jsonrpc.Methods{
+    "Hello": hello,
+  })
 
-	http.ListenAndServe(":80", server)
+  http.ListenAndServe(":80", server)
 }
 
 type helloParams struct {
-	Name string `json:"name"`
+  Name string `json:"name"`
 }
 
 func hello(ctx context.Context, params *helloParams) (interface{}, error) {
-	return jsonrpc.M{"message": fmt.Sprintf("Hello, %s", params.Name)}, nil
+  return jsonrpc.M{"message": fmt.Sprintf("Hello, %s", params.Name)}, nil
 }
 
 func LoggingMiddleware(logger *logger.Logger) Middleware {
-	return func (next jsonrpc.Next) jsonrpc.Next {
-		return func(ctx context.Context, params interface{}) (interface{}, error) {
-			method := jsonrpc.MethodFromContext(ctx)
-			start := time.Now()
-			defer func() {
-				logger.Printf("%s (%v)\n", method, time.Since(start))
-			}()
-			return next(ctx, params)
-		}
-	}
+  return func (next jsonrpc.Next) jsonrpc.Next {
+    return func(ctx context.Context, params interface{}) (interface{}, error) {
+      method := jsonrpc.MethodFromContext(ctx)
+      start := time.Now()
+      defer func() {
+        logger.Printf("%s (%v)\n", method, time.Since(start))
+      }()
+      return next(ctx, params)
+    }
+  }
 }
 ```
 
@@ -76,11 +76,11 @@ Request:
 
 ```json
 {
-	"id": 1,
-	"method": "Hello",
-	"params": {
-		"name": "Alice"
-	}
+  "id": 1,
+  "method": "Hello",
+  "params": {
+    "name": "Alice"
+  }
 }
 ```
 
@@ -88,9 +88,16 @@ Response:
 
 ```json
 {
-	"id": 1,
-	"result": {
-		"message": "Hello, Alice!"
-	}
+  "id": 1,
+  "result": {
+    "message": "Hello, Alice!"
+  }
 }
 ```
+
+[^1]:
+    This repo is a copy (not a fork) of
+    [github.com/deliveroo/jsonrpc-go](https://github.com/deliveroo/jsonrpc-go)
+    due to certain dependencies
+    ([github.com/deliveroo/assert-go](https://github.com/deliveroo/assert-go))
+    being deleted. It will be maintained separately from the original repo.
